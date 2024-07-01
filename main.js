@@ -1,69 +1,103 @@
-let computerNum = 0
-let startBtn = document.querySelector("#startBtn");
+// 랜덤한 숫자 전역변수로 미리선언
+let randomNum = 0;
+
+// 인풋
 let userInput = document.querySelector("#userInput");
-let resultArea = document.querySelector("#resultArea");
+// 스타트버튼
+let startBtn = document.querySelector("#startBtn");
+// 리셋버튼
 let resetBtn = document.querySelector("#resetBtn");
-let chanceArea = document.querySelector("#chanceArea")
-let maxChoice = 5;
+// 답이 나오는 곳
+let resultArea = document.querySelector("#resultArea");
+// 남은 기회 보이는 곳
+let choiceArea = document.querySelector("#choiceArea");
+// 말한 숫자 보이는 곳
+let historyArr = document.querySelector("#historyArr");
+// 결과 표시할 곳
+let result = document.querySelector("#result");
+
+// 최대 횟수
+let maxChoice = 3;
+
+// 남은 기회가 0이 되면 false
 let gameOver = false;
+
+// 사용자가 입력한 숫자를 보관함
 let history = [];
 
-startBtn.addEventListener("click", start);
-resetBtn.addEventListener("click", reset);
+startBtn.addEventListener("click", gameStart);
+resetBtn.addEventListener("click", gameReset);
 userInput.addEventListener("focus", function() {
-  userInput.value = ""
-})
+  userInput.value = "";
+});
 
 function pickRandomNum() {
-  computerNum = Math.floor(Math.random() * 100)+ 1
-  console.log(computerNum)
+  randomNum = Math.floor(Math.random() * 100) + 1;
+  result.textContent = `정답: ${randomNum}`;
+  console.log(randomNum);
 }
 
+function gameStart() {
+  if (gameOver) {
+    resultArea.textContent = "게임이 이미 종료되었습니다. 리셋 버튼을 눌러 게임을 다시 시작하세요.";
+    return;
+  }
 
-function start() {
-  let userValue =  userInput.value;
+  let userValue = parseInt(userInput.value); // 숫자로 변환
 
-  if(userValue < 1 || userValue > 100) {
-    resultArea.textContent = "1부터 100까지의 숫자를 입력해주세요"
+  if (userValue < 1 || userValue > 100 || isNaN(userValue)) {
+    resultArea.textContent = "1부터 100까지의 숫자를 입력해주세요";
     return;
   }
 
   if (history.includes(userValue)) {
-    resultArea.textContent="이미 입력한 숫자입니다. 다른 숫자를 입력해 주세요."
+    resultArea.textContent = "이미 입력한 숫자입니다. 다른 숫자를 입력해 주세요.";
     return;
   }
 
-  maxChoice --;
-  chanceArea.textContent = `남은 찬스: ${maxChoice}`
-  console.log("chance", maxChoice)
+  maxChoice--;
+  choiceArea.textContent = `남은 기회는 ${maxChoice}번 입니다.`;
 
-  if (userValue < computerNum) {
-    resultArea.textContent = "Up"
-  } else if (userValue > computerNum) {
-    resultArea.textContent = "Down"
-  } else if (userValue == computerNum) {
-    resultArea.textContent = "Right"
+  if (userValue > randomNum) {
+    resultArea.textContent = "숫자를 내려주세요";
+  } else if (userValue < randomNum) {
+    resultArea.textContent = "숫자를 올려주세요";
+  } else if (userValue === randomNum) {
+    resultArea.textContent = "정답입니다!";
     gameOver = true;
   }
 
   history.push(userValue);
+  updateHistory();
 
-  if (maxChoice == 0) {
-    gameOver = true
+  if (userValue === randomNum) {
+    return; // 정답을 맞췄을 때는 더 이상 진행하지 않음
   }
 
-  if (gameOver == true) {
-    startBtn.disabled = true
+  if (maxChoice === 0) {
+    gameOver = true;
+    resultArea.textContent = "모든 기회를 사용하셨습니다. 게임이 종료되었습니다.";
   }
 
+  if (gameOver) {
+    startBtn.disabled = true;
+  }
 }
 
-function reset() {
-  userInput.value = ""
-  resultArea.textContent = "결과 나오는 곳"
-  pickRandomNum()
+function updateHistory() {
+  historyArr.textContent = "지금까지 말한 숫자: " + history.join(", ");
 }
 
-
+function gameReset() {
+  userInput.value = "";
+  resultArea.textContent = "1부터 100까지의 숫자 중 하나를 입력해주세요!";
+  choiceArea.textContent = "남은 기회는 3번 입니다.";
+  historyArr.textContent = "지금까지 말한 숫자: ";
+  maxChoice = 3;
+  gameOver = false;
+  history = [];
+  startBtn.disabled = false;
+  pickRandomNum();
+}
 
 pickRandomNum();
